@@ -64,7 +64,7 @@ abstract class StaticDictionary implements Dictionary
     public function meta($key, string $meta_key)
     {
         if ($this->getItem($key, $item, $coerced_key)) {
-            return $this->metaFromItem($item)[$meta_key];
+            return $this->metaFromItem($item)[$meta_key] ?? null;
         } else {
             return null;
         }

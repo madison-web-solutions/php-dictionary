@@ -7,6 +7,7 @@ use JsonSerializable;
 /**
  * @property $key
  * @property string $label
+ * @property array $meta
  */
 class DictionaryValue implements JsonSerializable
 {
@@ -26,6 +27,7 @@ class DictionaryValue implements JsonSerializable
         switch ($name) {
             case 'key':
             case 'label':
+            case 'meta':
                 return $this->$name;
         }
         return $this->meta[$name] ?? null;
@@ -36,6 +38,7 @@ class DictionaryValue implements JsonSerializable
         switch ($name) {
             case 'key':
             case 'label':
+            case 'meta':
                 return true;
         }
         return $this->hasMeta($name);
