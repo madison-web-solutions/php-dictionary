@@ -73,13 +73,15 @@ class DictionaryTest extends TestCase
             ['not_found', 'Page Not Found', ['code' => 404]],
         ], $statuses);
 
-        $this->assertFalse($statuses->has('teapot'));
-        $this->assertNull($statuses->label('teapot'));
-        $this->assertNull($statuses->label(null));
-        $this->assertNull($statuses->meta('teapot', 'code'));
         $this->assertNull($statuses->meta('ok', 'foo'));
-        $this->assertNull($statuses->get('teapot'));
-        $this->assertNull($statuses->get(null));
+
+        $bad_keys = ['teapot', '', null, -1];
+        foreach ($bad_keys as $bad_key) {
+            $this->assertNull($statuses->get($bad_key));
+            $this->assertFalse($statuses->has($bad_key));
+            $this->assertNull($statuses->label($bad_key));
+            $this->assertNull($statuses->meta($bad_key, 'code'));
+        }
     }
 
     public function testSimpleStaticDictionary()
@@ -94,12 +96,12 @@ class DictionaryTest extends TestCase
 
         $cheeses = SimpleStaticDictionary::fromKeysAndLabels([
             'edam' => 'Dutch Edam',
-            'mozz' => 'Mozzarella',
+            'moz' => 'Mozzarella',
         ]);
         $this->assertInstanceOf(SimpleStaticDictionary::class, $cheeses);
         $this->assertDictionary([
             ['edam', 'Dutch Edam', []],
-            ['mozz', 'Mozzarella', []],
+            ['moz', 'Mozzarella', []],
         ], $cheeses);
 
         $veg = new SimpleStaticDictionary([
@@ -153,7 +155,7 @@ class DictionaryTest extends TestCase
         $capsule->addConnection([
             'driver' => 'sqlite',
             'database' => ':memory:',
-        ], 'default');
+        ]);
         $conn = $capsule->getConnection('default');
         $conn->getSchemaBuilder()->create('fruits', function ($table) {
             $table->increments('id');
@@ -180,6 +182,14 @@ class DictionaryTest extends TestCase
             [3, 'Banana', ['category' => 'Tropical']],
             [4, 'Lemon', ['category' => 'Citrus']],
         ], $dict1);
+
+        $bad_keys = ['teapot', '', null, -1];
+        foreach ($bad_keys as $bad_key) {
+            $this->assertNull($dict1->get($bad_key));
+            $this->assertFalse($dict1->has($bad_key));
+            $this->assertNull($dict1->label($bad_key));
+            $this->assertNull($dict1->meta($bad_key, 'category'));
+        }
 
         $dict2 = new SimpleDatabaseDictionary(function () use ($conn) {
             return $conn->table('fruits')

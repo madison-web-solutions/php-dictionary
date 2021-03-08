@@ -58,9 +58,9 @@ abstract class DatabaseDictionary implements SearchableDictionary
         return $meta;
     }
 
-    protected function applyKeyCriteria($query, $key): void
+    protected function applyKeyCriteria($query, $coerced_key): void
     {
-        $query->where($this->key_field, $key);
+        $query->where($this->key_field, $coerced_key);
     }
 
     protected static function addLikeSearchToQuery(QueryBuilder $query, array $search_fields, string $search_text): void
@@ -88,7 +88,7 @@ abstract class DatabaseDictionary implements SearchableDictionary
         DatabaseDictionary::addLikeSearchToQuery($query, [$this->label_field], $search_text);
     }
 
-    protected function getRow($coerced_key): stdClass
+    protected function getRow($coerced_key): ?stdClass
     {
         $query = $this->getBaseQuery();
         $this->applyKeyCriteria($query, $coerced_key);
@@ -103,7 +103,7 @@ abstract class DatabaseDictionary implements SearchableDictionary
     public function label($key): ?string
     {
         $value = $this->get($key);
-        return $value ? $value->label : '';
+        return $value ? $value->label : null;
     }
 
     public function meta($key, string $meta_key)
@@ -112,7 +112,7 @@ abstract class DatabaseDictionary implements SearchableDictionary
         return $value ? $value->meta($meta_key) : null;
     }
 
-    protected function valueFromRow($coerced_key, $row): ?DictionaryValue
+    protected function valueFromRow($coerced_key, ?stdClass $row): ?DictionaryValue
     {
         if (! $row) {
             $this->cache[$coerced_key] = null;
