@@ -1,15 +1,15 @@
 <?php
 
-use Illuminate\Database\Capsule\Manager as Capsule;
+namespace MadisonSolutions\DictionaryTest;
+
 use MadisonSolutions\Dictionary\DictionarySearchResult;
 use MadisonSolutions\Dictionary\DictionaryValue;
 use MadisonSolutions\Dictionary\SimpleDatabaseDictionary;
 use MadisonSolutions\Dictionary\SimpleStaticDictionary;
 use MadisonSolutions\Dictionary\Dictionary;
 use MadisonSolutions\Dictionary\StaticDictionary;
-use PHPUnit\Framework\TestCase;
 
-class DictionaryTest extends TestCase
+class DictionaryTest extends BaseTest
 {
     protected function assertValueInDictionary($key, string $label, array $meta, Dictionary $dict)
     {
@@ -151,24 +151,7 @@ class DictionaryTest extends TestCase
 
     public function testSimpleDatabaseDictionary()
     {
-        $capsule = new Capsule();
-        $capsule->addConnection([
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-        ]);
-        $conn = $capsule->getConnection('default');
-        $conn->getSchemaBuilder()->create('fruits', function ($table) {
-            $table->increments('id');
-            $table->string('name', 32);
-            $table->string('category', 32);
-            $table->integer('sourness');
-        });
-        $conn->table('fruits')->insert([
-            ['id' => 1, 'name' => 'Grape', 'category' => 'Vine', 'sourness' => 3],
-            ['id' => 2, 'name' => 'Orange', 'category' => 'Citrus', 'sourness' => 4],
-            ['id' => 3, 'name' => 'Banana', 'category' => 'Tropical', 'sourness' => 1],
-            ['id' => 4, 'name' => 'Lemon', 'category' => 'Citrus', 'sourness' => 8],
-        ]);
+        $conn = $this->getDummyDatabase();
 
         $dict1 = new SimpleDatabaseDictionary(function () use ($conn) {
             return $conn->table('fruits')
