@@ -2,6 +2,8 @@
 
 namespace MadisonSolutions\DictionaryTest;
 
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use MadisonSolutions\Dictionary\DatabaseDictionary;
 use MadisonSolutions\Dictionary\DictionarySearchResult;
 use MadisonSolutions\Dictionary\DictionaryValue;
 use MadisonSolutions\Dictionary\SimpleDatabaseDictionary;
@@ -147,6 +149,36 @@ class DictionaryTest extends BaseTest
             'label' => 'Apple',
             'meta' => ['sweet' => true],
         ], json_decode($json, true));
+    }
+
+    public function testDatabaseDictionary()
+    {
+        $dict = new class extends DatabaseDictionary {
+            public $conn;
+            protected function getBaseQuery(): QueryBuilder
+            {
+                return $this->conn->table('fruits')
+                    ->select(['id', 'name as label', 'category']);
+            }
+        };
+        $dict->conn = $this->getDummyDatabase();
+
+        $this->assertDictionary([
+            [1, 'Grape', ['category' => 'Vine']],
+            [2, 'Orange', ['category' => 'Citrus']],
+            [3, 'Banana', ['category' => 'Tropical']],
+            [4, 'Lemon', ['category' => 'Citrus']],
+        ], $dict);
+
+        $this->assertNull($dict->meta(1, 'foo'));
+
+        $bad_keys = ['teapot', '', null, -1];
+        foreach ($bad_keys as $bad_key) {
+            $this->assertNull($dict->get($bad_key));
+            $this->assertFalse($dict->has($bad_key));
+            $this->assertNull($dict->label($bad_key));
+            $this->assertNull($dict->meta($bad_key, 'category'));
+        }
     }
 
     public function testSimpleDatabaseDictionary()
